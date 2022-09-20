@@ -1,17 +1,16 @@
-
-#include <cstdint>
-#include <vector>
-#include <algorithm>
+#include <cstdint>															 //includes the int types of a specific size
+#include <vector>															 //container: continuous in memory
+#include <algorithm>														
 #include <cstdio>
 #include <iostream>
 
 
 int main(){
-	auto matrix{ std::vector<std::vector<char>>(3) };
+	auto matrix{ std::vector<std::vector<char>>(3) };                        //this is our playing field
 
-	for(int i{0}; i < 3; ++i){
+	for(int i{0}; i < 3; ++i){											     //loop over each row to initialize it
 		matrix[i] = std::vector<char>(3);
-		for(int j{0}; j<3; ++j){
+		for(int j{0}; j<3; ++j){											 //loop over each entry in the row
 			matrix[i][j] = ' ';
 		}
 	}
@@ -34,7 +33,8 @@ int main(){
 			std::cout << "\n-------" << std::endl;
 		}
 
-		//player input
+		//player input:
+		//---------------------------------------------------------
 		std::cout << "Player" << (p1_turn?"1":"2") << "\nZeile: ";
 		std::cin >> row;
 		std::cout << "\nSpalte: ";
@@ -42,8 +42,9 @@ int main(){
 
 		matrix[row][col] = p1_turn?'O':'X';
 
-		//check if game is over
-		//diagonal
+		//check if game is over:
+		//---------------------------------------------------------
+		//diagonal: "\"
 		if(matrix[0][0] == matrix[1][1]&& 
 		   matrix[1][1] == matrix[2][2]){
 			if(matrix[0][0] != ' '){
@@ -53,7 +54,7 @@ int main(){
 			}
 		}
 
-
+		//diagonal: "/"
 		if(matrix[0][2] == matrix[1][1]&& 
 		   matrix[1][1] == matrix[2][0]){
 		    if(matrix[0][2] != ' '){
@@ -63,7 +64,7 @@ int main(){
 			}
 		}
 	
-		//cols
+		//cols:
 		for(unsigned i{ 0 }; i < matrix.size(); ++i){
 			if(matrix[i][0] == matrix[i][1]&& 
 		   	   matrix[i][1] == matrix[i][2]){
@@ -75,7 +76,7 @@ int main(){
 			}
 		}
 
-		//rows
+		//rows:
 		for(unsigned i{ 0 }; i < matrix.size(); ++i){
 			if(matrix[0][i] == matrix[1][i]&& 
 		   	   matrix[1][i] == matrix[2][i]){
@@ -86,6 +87,7 @@ int main(){
 				}
 			}
 		}
+		//-------------------------------------------------------
 
 		p1_turn = !p1_turn;
 	}
