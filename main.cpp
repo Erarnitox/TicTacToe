@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <iostream>
 
+#include "NeuralNet.h"
+
+enum Modus{ UNDEFINED=0, NORMAL=1, AI_GAME, AI_TRAINING };
 
 int main(){
 	auto matrix{ std::vector<std::vector<char>>(3) };                        //this is our playing field
@@ -15,6 +18,17 @@ int main(){
 		}
 	}
 
+	auto choice{ 0 };
+	std::cout << "Wie willst du spielen:\n"
+				 "1) Lokal gegen einen Freund\n"
+				 "2) Gegen eine KI\n"
+				 "3) KI trainiern\n"
+				 "Auswahl: "
+	<< std::endl;
+	std::cin >> choice;
+
+	Modus modus = (Modus)choice;
+
 	//game loop
 	auto end{ false };
 	auto p1_turn{ true };
@@ -22,7 +36,11 @@ int main(){
 	auto col{ 0 };
 	auto won{ 0 };
 
+	NeuronalNet ai;
+
 	while(!end){
+		
+	if(modus != AI_TRAINING){
 		//display field
 		std::cout << "\n-------" << std::endl;
 		for(auto row : matrix){
@@ -35,12 +53,22 @@ int main(){
 
 		//player input:
 		//---------------------------------------------------------
-		std::cout << "Player" << (p1_turn?"1":"2") << "\nZeile: ";
-		std::cin >> row;
-		std::cout << "\nSpalte: ";
-		std::cin >> col;
+		do {
+			if(modus == NORMAL || (modus==AI_GAME && p1_turn)){
+				std::cout << "Player" << (p1_turn?"1":"2") << "\nZeile: ";
+				std::cin >> row;
+				std::cout << "\nSpalte: ";
+				std::cin >> col;
+			}else{
+				auto turn{ ai.predict(matrix) };
+				row = std::get<0>(turn);
+				col = std::get<1>(turn);
+			}
+		} while(matrix[row][col] != ' ');
 
 		matrix[row][col] = p1_turn?'O':'X';
+	}
+
 
 		//check if game is over:
 		//---------------------------------------------------------
@@ -87,9 +115,27 @@ int main(){
 				}
 			}
 		}
+
+		//check for tie
+		//end = true; //TODO: WTF!!!!!	
+		for(unsigned y{ 0 }; y < matrix.size(); ++y){
+			for(unsigned x{ 0 }; x < matrix[y].size(); ++x){
+				if(!matrix[y][x]){
+					end = false;
+					won = -1;
+					break;
+				}
+			}
+			if(!end) break;
+		}
 		//-------------------------------------------------------
 
 		p1_turn = !p1_turn;
+	}
+
+	if(won == -1){
+		std::cout << "It's a tie!" << std::endl;
+		return 0;
 	}
 
 	//who has won
