@@ -117,10 +117,10 @@ int main(){
 		}
 
 		//check for tie
-		//end = true; //TODO: WTF!!!!!	
+		end = true;
 		for(unsigned y{ 0 }; y < matrix.size(); ++y){
 			for(unsigned x{ 0 }; x < matrix[y].size(); ++x){
-				if(!matrix[y][x]){
+				if(matrix[y][x] == ' '){
 					end = false;
 					won = -1;
 					break;
