@@ -9,6 +9,7 @@
 enum Modus{ UNDEFINED=0, NORMAL=1, AI_GAME, AI_TRAINING };
 
 int main(){
+	int another_disappointment { 5 };
 	auto matrix{ std::vector<std::vector<char>>(3) };                        //this is our playing field
 
 	for(int i{0}; i < 3; ++i){											     //loop over each row to initialize it
@@ -36,8 +37,16 @@ int main(){
 	auto col{ 0 };
 	auto won{ 0 };
 
-	NeuronalNet ai;
+	auto bots{ std::vector<NeuronalNet>() };
+	bots.emplace_back(NeuronalNet());
+	auto& ai = bots[0];
 
+	if(modus == AI_TRAINING){
+		bots.emplace_back(NeuronalNet());
+	}
+
+
+ai_loop:
 	while(!end){
 		
 	if(modus != AI_TRAINING){
@@ -65,6 +74,24 @@ int main(){
 				col = std::get<1>(turn);
 			}
 		} while(matrix[row][col] != ' ');
+
+		matrix[row][col] = p1_turn?'O':'X';
+	}else{
+		//---------------------------------------------
+		//display field
+		std::cout << "\n-------" << std::endl;
+		for(auto row : matrix){
+			std::cout << "|";
+			for(auto el : row){
+				std::cout << el << "|"; 
+			}
+			std::cout << "\n-------" << std::endl;
+		}
+		//---------------------------------------------
+		auto current = bots[(p1_turn? 0:1)];
+		auto turn{ current.predict(matrix) };
+		row = std::get<0>(turn);
+		col = std::get<1>(turn);
 
 		matrix[row][col] = p1_turn?'O':'X';
 	}
@@ -140,6 +167,18 @@ int main(){
 
 	//who has won
 	std::cout << "Player" << (won==1?"1":"2") << " has won!\n" << std::endl;
+
+	if(modus == AI_TRAINING){ 
+		auto win_bot = bots[won==1? 0:1];
+		auto los_bot = bots[won==1? 1:0];
+
+		los_bot.kill();
+		los_bot.krueppel_copy(win_bot);
+
+			
+		if(--another_disappointment)
+			goto ai_loop;
+	}
 
 	return 0;
 }

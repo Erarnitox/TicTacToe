@@ -2,10 +2,20 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
-template <typename T> 
-T sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+constexpr bool DEBUG{ true };
+auto sgn(float input) -> float {
+	 //return (float)1 / ((float)1 + exp((float)-input));
+	 return (float)input/1+std::abs((float)input);
+}
+
+template<typename T>
+inline
+void debugLog(const std::string msg, T value){
+	if(DEBUG){
+		std::cout << msg << " : " << value << "\n";
+	}
 }
 
 class Neuron{
@@ -20,15 +30,19 @@ class Neuron{
 	{
 		//initialize weights
 		for(unsigned i{ 0 }; i < 9; ++i){
+			auto r_value{rand()};
+			debugLog<int>("Random Value", r_value);
 			weights[i] = sgn(rand());
+			debugLog<float>("init weight", weights[i]);
 		}
 	}
 
 	void setValue(float value){
+		debugLog<float>("- New Value for Node:", sgn(value));
 		this->value = sgn(value);
 	}
 
-	float getValue(){
+	float getValue() const {
 		return this->value;
 	}
 
@@ -36,10 +50,21 @@ class Neuron{
 		this->value = sgn(this->value + value);
 	}
 
-	float getWeightedValue(int weightId){
+	float getWeightedValue(int weightId) const {
 		return this->value * weights[weightId];
 	}
 
+	float getWeightById(int id) const {
+		return this->weights[id];
+	}
+
+	unsigned getWeightCount() const {
+		return this->weights.size();
+	}
+
+	void setWeight(int id, float weight){
+		this->weights[id] = weight;
+	}
 };
 
 class NeuronalNet{
@@ -51,6 +76,31 @@ public:
 	{
 		for(unsigned i{ 0 }; i < layer.size(); ++i){
 			layer[i] = std::vector<Neuron>(9);
+		}
+	}
+
+	void kill(){
+	}
+
+	void krueppel_copy(const NeuronalNet& other){
+		for(unsigned i{ 0 }; i < this->layer.size(); ++i){
+			for(unsigned j { 0 }; this->layer[i].size(); ++j){
+				this->layer[i][j].setValue(other.layer[i][j].getValue());
+				auto rnd{ rand()%6 };
+				if(rnd > 4){
+					this->layer[i][j].addValue((rnd-5)*0.001f);
+				}
+
+				for(unsigned k { 0 }; this->layer[i][j].getWeightCount(); ++k){
+					this->layer[i][j].setWeight(k, other.layer[i][j].getWeightById(k));
+					auto rnd{ rand()%10 };
+					if(rnd > 8){
+						auto curr_weight{ this->layer[i][j].getWeightById(k) };
+						curr_weight += (rnd-9)*0.001f;
+						this->layer[i][j].setWeight(k, curr_weight);
+					}
+				}
+			}
 		}
 	}
 
@@ -111,10 +161,12 @@ public:
 
 		auto result = this->feedForward(input);
 		std::pair<int, int> turn;
-		auto max{ 0 };
+		auto max{ 0.0f };
 		for(auto i{ 0 }; i < 3; ++i){
 			for(auto j{ 0 }; j < 3; ++j){
+				debugLog<float>("res value", result[i*3+j]);
 				if(result[i*3+j] > max){
+					debugLog<float>("New Max in prediction", max);
 					max = result[i*3+j];
 					turn = std::make_pair(i, j);
 				}
